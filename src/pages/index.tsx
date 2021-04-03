@@ -1,8 +1,7 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { FaCalendar } from 'react-icons/fa';
-import { FiUser } from 'react-icons/fi';
+import { FiUser, FiCalendar } from 'react-icons/fi';
 
 import { getPrismicClient } from '../services/prismic';
 
@@ -37,13 +36,13 @@ export default function Home(): JSX.Element {
 
       <main className={styles.container}>
         <div className={styles.posts}>
-          <Link href="aa">
+          <Link href="/post/example">
             <a>
               <strong>Como Utilizar Hooks</strong>
               <p>Pensando em sincronizção em vez de ciclos de vida</p>
               <footer>
                 <div>
-                  <FaCalendar size={20} />
+                  <FiCalendar size={20} />
                   <time>10 Mar 2021</time>
                 </div>
                 <div>
@@ -53,13 +52,13 @@ export default function Home(): JSX.Element {
               </footer>
             </a>
           </Link>
-          <Link href="aa">
+          <Link href="/post/example">
             <a>
               <strong>Como Utilizar Hooks</strong>
               <p>Pensando em sincronizção em vez de ciclos de vida</p>
               <footer>
                 <div>
-                  <FaCalendar size={20} />
+                  <FiCalendar size={20} />
                   <time>10 Mar 2021</time>
                 </div>
                 <div>
@@ -69,13 +68,13 @@ export default function Home(): JSX.Element {
               </footer>
             </a>
           </Link>
-          <Link href="aa">
+          <Link href="/post/example">
             <a>
               <strong>Como Utilizar Hooks</strong>
               <p>Pensando em sincronizção em vez de ciclos de vida</p>
               <footer>
                 <div>
-                  <FaCalendar size={20} />
+                  <FiCalendar size={20} />
                   <time>10 Mar 2021</time>
                 </div>
                 <div>
