@@ -1,1 +1,84 @@
-// TODO
+.bannerImage {
+  width: 100%;
+  background: url('https://geomarvel.com/wp-content/uploads/2017/07/roman-synkevych-vXInUOv1n84-unsplash.jpg') no-repeat;
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.post {
+  max-width: 720px;
+  margin: 0 auto;
+  margin-top: 4rem;
+
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+  }
+
+  footer {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      time {
+        margin-left: 0.25rem;
+        color: var(--gray-750);
+      }
+
+      span {
+        margin-left: 0.25rem;
+        color: var(--gray-750);
+      }
+
+      svg {
+        color: var(--gray-750);
+      }
+    }
+
+    > div + div {
+      margin-left: 1rem;
+    }
+  }
+
+  .postContent {
+    margin-top: 2rem;
+    line-height: 2rem;
+    font-size: 1.125rem;
+    color: var(--gray-100);
+
+    p, ul {
+      margin: 1.5rem 0;
+    }
+
+    ul {
+      padding-left: 1.5rem;
+      list-style: none;
+
+      li {
+        margin: 0.5rem 0;
+      }
+    }
+
+    &.previewContent {
+      background: linear-gradient(var(--gray-100), transparent);
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    a {
+      color: var(--pink);
+    }
+  }
+}
