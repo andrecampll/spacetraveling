@@ -3,9 +3,9 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { FiUser, FiCalendar } from 'react-icons/fi';
 
+import Prismic from '@prismicio/client';
 import { getPrismicClient } from '../services/prismic';
-
-import commonStyles from '../styles/common.module.scss';
+// import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
 interface Post {
@@ -27,7 +27,7 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home(): JSX.Element {
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
   return (
     <>
       <Head>
@@ -36,54 +36,24 @@ export default function Home(): JSX.Element {
 
       <main className={styles.container}>
         <div className={styles.posts}>
-          <Link href="/post/example">
-            <a>
-              <strong>Como Utilizar Hooks</strong>
-              <p>Pensando em sincronizção em vez de ciclos de vida</p>
-              <footer>
-                <div>
-                  <FiCalendar size={20} />
-                  <time>10 Mar 2021</time>
-                </div>
-                <div>
-                  <FiUser size={20} />
-                  <span>10 Mar 2021</span>
-                </div>
-              </footer>
-            </a>
-          </Link>
-          <Link href="/post/example">
-            <a>
-              <strong>Como Utilizar Hooks</strong>
-              <p>Pensando em sincronizção em vez de ciclos de vida</p>
-              <footer>
-                <div>
-                  <FiCalendar size={20} />
-                  <time>10 Mar 2021</time>
-                </div>
-                <div>
-                  <FiUser size={20} />
-                  <span>10 Mar 2021</span>
-                </div>
-              </footer>
-            </a>
-          </Link>
-          <Link href="/post/example">
-            <a>
-              <strong>Como Utilizar Hooks</strong>
-              <p>Pensando em sincronizção em vez de ciclos de vida</p>
-              <footer>
-                <div>
-                  <FiCalendar size={20} />
-                  <time>10 Mar 2021</time>
-                </div>
-                <div>
-                  <FiUser size={20} />
-                  <span>10 Mar 2021</span>
-                </div>
-              </footer>
-            </a>
-          </Link>
+          {postsPagination.results.map(post => (
+            <Link href={`/post/${post.uid}`} key={post.uid}>
+              <a>
+                <strong>{post.data.title}</strong>
+                <p>{post.data.subtitle}</p>
+                <footer>
+                  <div>
+                    <FiCalendar size={20} />
+                    <time>{post.first_publication_date}</time>
+                  </div>
+                  <div>
+                    <FiUser size={20} />
+                    <span>{post.data.author}</span>
+                  </div>
+                </footer>
+              </a>
+            </Link>
+          ))}
 
           <button type="button">Carregar mais posts</button>
         </div>
@@ -92,9 +62,39 @@ export default function Home(): JSX.Element {
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query(
+    [Prismic.predicates.at('document.type', 'post')],
+    {
+      fetch: ['post.title', 'post.subtitle', 'post.author'],
+    }
+  );
 
-//   // TODO
-// };
+  const results = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+      first_publication_date: new Date(
+        post.last_publication_date
+      ).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }),
+    };
+  });
+
+  return {
+    props: {
+      postsPagination: {
+        next_page: '',
+        results,
+      },
+    },
+  };
+};
