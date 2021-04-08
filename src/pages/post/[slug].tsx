@@ -1,6 +1,8 @@
+/* eslint-disable react/no-danger */
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import { RichText } from 'prismic-dom';
 import { FiUser, FiCalendar, FiClock } from 'react-icons/fi';
 
 import { getPrismicClient } from '../../services/prismic';
@@ -20,7 +22,7 @@ interface Post {
       heading: string;
       body: {
         text: string;
-      }[];
+      };
     }[];
   };
 }
@@ -29,7 +31,7 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post(): JSX.Element {
+export default function Post({ post }: PostProps): JSX.Element {
   return (
     <>
       <Head>
@@ -40,15 +42,15 @@ export default function Post(): JSX.Element {
 
       <main className={styles.container}>
         <article className={styles.post}>
-          <h1>Como utilizar hooks</h1>
+          <h1>{post.data.title}</h1>
           <footer>
             <div>
               <FiCalendar size={20} />
-              <time>10 Mar 2021</time>
+              <time>{post.first_publication_date}</time>
             </div>
             <div>
               <FiUser size={20} />
-              <span>André</span>
+              <span>{post.data.author}</span>
             </div>
             <div>
               <FiClock size={20} />
@@ -57,12 +59,16 @@ export default function Post(): JSX.Element {
           </footer>
 
           <div className={styles.postContent}>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-              Blanditiis quo deserunt est, ad molestias eaque ducimus quaerat,
-              deleniti similique earum optio laboriosam nihil perspiciatis,
-              error aspernatur sequi consectetur doloremque repellat.
-            </p>
+            {post.data.content.map(content => (
+              <>
+                <h2>{content.heading}</h2>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: content.body.text,
+                  }}
+                />
+              </>
+            ))}
           </div>
         </article>
       </main>
@@ -70,16 +76,46 @@ export default function Post(): JSX.Element {
   );
 }
 
-// export const getStaticPaths = async () => {
-//   const prismic = getPrismicClient();
-//   const posts = await prismic.query(TODO);
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [],
+    fallback: 'blocking',
+  };
+};
 
-//   // TODO
-// };
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const prismic = getPrismicClient();
+  const { slug } = params;
 
-// export const getStaticProps = async context => {
-//   const prismic = getPrismicClient();
-//   const response = await prismic.getByUID(TODO);
+  const response = await prismic.getByUID('post', String(slug), {});
 
-//   // TODO
-// };
+  const post = {
+    data: {
+      author: response.data.author,
+      title: response.data.title,
+      content: response.data.content.map(content => ({
+        heading: content.heading,
+        body: {
+          text: RichText.asHtml(content.body),
+        },
+      })),
+      banner: {
+        url: response.data.banner.url,
+      },
+    },
+    first_publication_date: new Date(
+      response.last_publication_date
+    ).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }),
+  };
+
+  return {
+    props: {
+      post,
+    },
+    revalidate: 60 * 30,
+  };
+};
