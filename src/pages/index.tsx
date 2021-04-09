@@ -4,9 +4,15 @@ import Link from 'next/link';
 import { FiUser, FiCalendar } from 'react-icons/fi';
 
 import Prismic from '@prismicio/client';
+
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
+import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
 // import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import Header from '../components/Header';
 
 interface Post {
   uid?: string;
@@ -28,15 +34,19 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const [posts, setPosts] = useState(postsPagination.results);
+
   return (
     <>
       <Head>
         <title>Home | spacetraveling</title>
       </Head>
 
+      <Header />
+
       <main className={styles.container}>
         <div className={styles.posts}>
-          {postsPagination.results.map(post => (
+          {posts.map(post => (
             <Link href={`/post/${post.uid}`} key={post.uid}>
               <a>
                 <strong>{post.data.title}</strong>
@@ -44,7 +54,11 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
                 <footer>
                   <div>
                     <FiCalendar size={20} />
-                    <time>{post.first_publication_date}</time>
+                    <time>
+                      {format(new Date(post.first_publication_date), 'PP', {
+                        locale: ptBR,
+                      })}
+                    </time>
                   </div>
                   <div>
                     <FiUser size={20} />
@@ -55,7 +69,22 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             </Link>
           ))}
 
-          <button type="button">Carregar mais posts</button>
+          {postsPagination.next_page && (
+            <button
+              type="button"
+              onClick={async () => {
+                const response = await fetch(postsPagination.next_page);
+
+                const { results } = await response.json();
+
+                const newPostsArray = [...posts, results].flat();
+
+                setPosts(newPostsArray);
+              }}
+            >
+              Carregar mais posts
+            </button>
+          )}
         </div>
       </main>
     </>
@@ -79,20 +108,14 @@ export const getStaticProps: GetStaticProps = async () => {
         subtitle: post.data.subtitle,
         author: post.data.author,
       },
-      first_publication_date: new Date(
-        post.last_publication_date
-      ).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }),
+      first_publication_date: post.first_publication_date,
     };
   });
 
   return {
     props: {
       postsPagination: {
-        next_page: '',
+        next_page: postsResponse.next_page,
         results,
       },
     },
