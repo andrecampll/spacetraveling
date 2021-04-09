@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { RichText } from 'prismic-dom';
 import { FiUser, FiCalendar, FiClock } from 'react-icons/fi';
+import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -37,6 +38,8 @@ export default function Post({ post }: PostProps): JSX.Element {
       <Head>
         <title>Post | Ignews</title>
       </Head>
+
+      <Header />
 
       <div className={styles.bannerImage} />
 
