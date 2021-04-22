@@ -18,6 +18,7 @@ import { getPrismicClient } from '../../services/prismic';
 // import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import { UtterancesComments } from '../../components/Comments';
+import NavigationSection from '../../components/NavigationSection';
 
 interface Post {
   first_publication_date: string | null;
@@ -38,9 +39,26 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  navigationItems?: {
+    nextPost?: {
+      uid: string;
+      data: {
+        title: string;
+      };
+    };
+    previousPost?: {
+      uid: string;
+      data: {
+        title: string;
+      };
+    };
+  };
 }
 
-export default function Post({ post }: PostProps): JSX.Element {
+export default function Post({
+  post,
+  navigationItems,
+}: PostProps): JSX.Element {
   const router = useRouter();
 
   const totalWords = post.data.content.reduce((total, contentItem) => {
@@ -102,10 +120,15 @@ export default function Post({ post }: PostProps): JSX.Element {
               </Fragment>
             ))}
           </div>
+
+          <NavigationSection
+            nextPost={navigationItems.nextPost}
+            previousPost={navigationItems.previousPost}
+          />
+
+          <UtterancesComments />
         </article>
       </main>
-
-      <UtterancesComments />
     </>
   );
 }
@@ -137,6 +160,37 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const response = await prismic.getByUID('post', String(slug), {});
 
+  const postsResponse = await prismic.query(
+    [Prismic.predicates.at('document.type', 'post')],
+    {
+      fetch: ['post.title', 'post.subtitle', 'post.author'],
+    }
+  );
+
+  const results = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      data: {
+        title: post.data.title,
+      },
+    };
+  });
+
+  const currentPostPositionIndex = results.findIndex(
+    post => post.uid === response.uid
+  );
+
+  const otherPosts = results.filter(
+    (post, index) =>
+      index === currentPostPositionIndex + 1 ||
+      index === currentPostPositionIndex - 1
+  );
+
+  const navigationItems = {
+    nextPost: otherPosts[0] ?? null,
+    previousPost: otherPosts[1] ?? null,
+  };
+
   const post = {
     data: {
       author: response.data.author,
@@ -147,7 +201,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         body: [...item.body],
       })),
       banner: {
-        url: response.data.banner.url,
+        url: response.data.banner.url ?? null,
       },
     },
     uid: response.uid,
@@ -157,6 +211,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return {
     props: {
       post,
+      navigationItems,
     },
     revalidate: 60 * 30,
   };
