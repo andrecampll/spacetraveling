@@ -1,0 +1,29 @@
+.navigation {
+  display: flex;
+  justify-content: space-between;
+
+  border-top: 1px solid #333;
+  margin-top: 2rem;
+  padding: 2rem 0;
+
+  > div {
+    h5 {
+      font-size: 1rem;
+      font-weight: 300;
+      max-width: 8rem;
+      margin-bottom: 1rem;
+    }
+
+    a {
+      color: var(--pink);
+      background: transparent;
+      border: 0;
+    }
+  }
+
+  > div:last-child {
+    a {
+      margin-left: 2rem;
+    }
+  }
+}
